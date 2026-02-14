@@ -10,12 +10,35 @@
   border: 1px solid #c8e6c8;
 }
 
+.final-response-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
 .chairman-label {
   color: #2d8a2d;
   font-size: 12px;
   font-family: monospace;
-  margin-bottom: 12px;
   font-weight: 600;
+}
+
+.share-answer-btn {
+  padding: 4px 14px;
+  background: #fff;
+  border: 1px solid #c8e6c8;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #2d8a2d;
+  font-weight: 500;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.share-answer-btn:hover {
+  background: #e8f5e9;
+  border-color: #2d8a2d;
 }
 
 .final-text {

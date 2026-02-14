@@ -14,6 +14,7 @@ TOP_MODEL_IDS = [
     "openai/gpt-5.1",
     "openai/o3",
     "openai/o4-mini",
+    "anthropic/claude-opus-4-6",
     "anthropic/claude-sonnet-4.5",
     "anthropic/claude-opus-4",
     "google/gemini-3-pro-preview",

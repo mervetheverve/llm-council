@@ -94,9 +94,10 @@ export default function Sidebar({
               target="_blank"
               rel="noopener noreferrer"
               className="balance-badge"
-              title="Click to add credits on OpenRouter"
+              title="OpenRouter credits — click to add more"
             >
-              ${balance.toFixed(2)}
+              <span className="balance-label">OpenRouter</span>
+              <span className="balance-amount">${balance.toFixed(2)}</span>
             </a>
           )}
         </div>

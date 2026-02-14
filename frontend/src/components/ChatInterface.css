@@ -187,3 +187,114 @@
   background: #ccc;
   border-color: #ccc;
 }
+
+/* ── Progress Stepper ── */
+.progress-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 20px 16px;
+  margin: 12px 0;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 80px;
+}
+
+.step-indicator {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+/* Pending state */
+.step.pending .step-indicator {
+  background: #e8eaed;
+  color: #9aa0a6;
+  border: 2px solid #dadce0;
+}
+
+/* Active state */
+.step.active .step-indicator {
+  background: #e8f0fe;
+  color: #4a90e2;
+  border: 2px solid #4a90e2;
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.15);
+}
+
+/* Completed state */
+.step.completed .step-indicator {
+  background: #4a90e2;
+  color: #fff;
+  border: 2px solid #4a90e2;
+}
+
+.step-number {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.check-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.step-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(74, 144, 226, 0.3);
+  border-top-color: #4a90e2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.step-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9aa0a6;
+  transition: color 0.3s ease;
+}
+
+.step.active .step-label {
+  color: #4a90e2;
+}
+
+.step.completed .step-label {
+  color: #4a90e2;
+}
+
+/* Connector line between steps */
+.step-connector-wrapper {
+  flex: 0 0 60px;
+  display: flex;
+  align-items: center;
+  padding-bottom: 24px;
+}
+
+.step-connector {
+  width: 100%;
+  height: 3px;
+  background: #dadce0;
+  border-radius: 2px;
+  transition: background 0.4s ease;
+}
+
+.step-connector.filled {
+  background: #4a90e2;
+}

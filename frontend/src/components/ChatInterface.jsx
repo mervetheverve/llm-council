@@ -110,22 +110,58 @@ export default function ChatInterface({
                 <div className="assistant-message">
                   <div className="message-label">LLM Council</div>
 
-                  {/* Stage 1 */}
-                  {msg.loading?.stage1 && (
-                    <div className="stage-loading">
-                      <div className="spinner"></div>
-                      <span>Running Stage 1: Collecting individual responses...</span>
+                  {/* Progress Stepper — visible while any stage is loading */}
+                  {(msg.loading?.stage1 || msg.loading?.stage2 || msg.loading?.stage3) && (
+                    <div className="progress-stepper">
+                      <div className={`step ${msg.stage1 ? 'completed' : msg.loading?.stage1 ? 'active' : 'pending'}`}>
+                        <div className="step-indicator">
+                          {msg.stage1 ? (
+                            <svg viewBox="0 0 20 20" fill="currentColor" className="check-icon"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                          ) : msg.loading?.stage1 ? (
+                            <div className="step-spinner"></div>
+                          ) : (
+                            <span className="step-number">1</span>
+                          )}
+                        </div>
+                        <div className="step-label">Responses</div>
+                      </div>
+                      <div className="step-connector-wrapper">
+                        <div className={`step-connector ${msg.stage1 ? 'filled' : ''}`}></div>
+                      </div>
+                      <div className={`step ${msg.stage2 ? 'completed' : msg.loading?.stage2 ? 'active' : 'pending'}`}>
+                        <div className="step-indicator">
+                          {msg.stage2 ? (
+                            <svg viewBox="0 0 20 20" fill="currentColor" className="check-icon"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                          ) : msg.loading?.stage2 ? (
+                            <div className="step-spinner"></div>
+                          ) : (
+                            <span className="step-number">2</span>
+                          )}
+                        </div>
+                        <div className="step-label">Peer Review</div>
+                      </div>
+                      <div className="step-connector-wrapper">
+                        <div className={`step-connector ${msg.stage2 ? 'filled' : ''}`}></div>
+                      </div>
+                      <div className={`step ${msg.stage3 ? 'completed' : msg.loading?.stage3 ? 'active' : 'pending'}`}>
+                        <div className="step-indicator">
+                          {msg.stage3 ? (
+                            <svg viewBox="0 0 20 20" fill="currentColor" className="check-icon"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                          ) : msg.loading?.stage3 ? (
+                            <div className="step-spinner"></div>
+                          ) : (
+                            <span className="step-number">3</span>
+                          )}
+                        </div>
+                        <div className="step-label">Synthesis</div>
+                      </div>
                     </div>
                   )}
+
+                  {/* Stage 1 */}
                   {msg.stage1 && <Stage1 responses={msg.stage1} />}
 
                   {/* Stage 2 */}
-                  {msg.loading?.stage2 && (
-                    <div className="stage-loading">
-                      <div className="spinner"></div>
-                      <span>Running Stage 2: Peer rankings...</span>
-                    </div>
-                  )}
                   {msg.stage2 && (
                     <Stage2
                       rankings={msg.stage2}
@@ -135,12 +171,6 @@ export default function ChatInterface({
                   )}
 
                   {/* Stage 3 */}
-                  {msg.loading?.stage3 && (
-                    <div className="stage-loading">
-                      <div className="spinner"></div>
-                      <span>Running Stage 3: Final synthesis...</span>
-                    </div>
-                  )}
                   {msg.stage3 && <Stage3 finalResponse={msg.stage3} />}
                 </div>
               )}
