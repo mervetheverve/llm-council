@@ -10,7 +10,38 @@ import json
 import asyncio
 
 from . import storage
+from . import config
 from .council import run_full_council, generate_conversation_title, stage1_collect_responses, stage2_collect_rankings, stage3_synthesize_final, calculate_aggregate_rankings
+
+def build_context_messages(conversation: Dict[str, Any], max_turns: int = 12) -> List[Dict[str, str]]:
+    """
+    Convert stored conversation messages into chat-style messages for the LLM.
+    Keeps the most recent max_turns messages to control token growth.
+    """
+    msgs = conversation.get("messages", [])
+    recent = msgs[-max_turns:] if max_turns else msgs
+
+    llm_msgs: List[Dict[str, str]] = []
+    for m in recent:
+        role = m.get("role")
+        # your storage likely uses "user"/"assistant"
+        if role == "user":
+            llm_msgs.append({"role": "user", "content": m.get("content", "")})
+        elif role == "assistant":
+            # IMPORTANT: we want the "final synthesis" as the assistant’s reply for continuity
+            # Adjust this depending on how storage stores the assistant message.
+            content = ""
+            if "stage3" in m and isinstance(m["stage3"], dict):
+                content = m["stage3"].get("final", "") or m["stage3"].get("content", "") or str(m["stage3"])
+            elif "content" in m:
+                content = m.get("content", "")
+            else:
+                content = json.dumps(m, ensure_ascii=False)
+
+            llm_msgs.append({"role": "assistant", "content": content})
+
+    return llm_msgs
+
 
 app = FastAPI(title="LLM Council API")
 
@@ -34,6 +65,12 @@ class SendMessageRequest(BaseModel):
     content: str
 
 
+class UpdateCouncilRequest(BaseModel):
+    """Request to update council models."""
+    council_models: List[str]
+    chairman_model: str
+
+
 class ConversationMetadata(BaseModel):
     """Conversation metadata for list view."""
     id: str
@@ -54,6 +91,44 @@ class Conversation(BaseModel):
 async def root():
     """Health check endpoint."""
     return {"status": "ok", "service": "LLM Council API"}
+
+
+@app.get("/api/config")
+async def get_config():
+    """Get current council configuration."""
+    return {
+        "available_models": config.AVAILABLE_MODELS,
+        "council_models": config.COUNCIL_MODELS,
+        "chairman_model": config.CHAIRMAN_MODEL,
+    }
+
+
+@app.put("/api/config")
+async def update_config(request: UpdateCouncilRequest):
+    """Update council models and chairman."""
+    config.COUNCIL_MODELS = request.council_models
+    config.CHAIRMAN_MODEL = request.chairman_model
+    return {
+        "council_models": config.COUNCIL_MODELS,
+        "chairman_model": config.CHAIRMAN_MODEL,
+    }
+
+
+@app.get("/api/balance")
+async def get_balance():
+    """Get OpenRouter account balance."""
+    import httpx
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                "https://openrouter.ai/api/v1/credits",
+                headers={"Authorization": f"Bearer {config.OPENROUTER_API_KEY}"}
+            )
+            response.raise_for_status()
+            data = response.json()
+            return {"balance": data.get("data", {}).get("total_credits", 0) - data.get("data", {}).get("total_usage", 0)}
+    except Exception as e:
+        return {"balance": None, "error": str(e)}
 
 
 @app.get("/api/conversations", response_model=List[ConversationMetadata])
@@ -101,12 +176,16 @@ async def send_message(conversation_id: str, request: SendMessageRequest):
         title = await generate_conversation_title(request.content)
         storage.update_conversation_title(conversation_id, title)
 
-    # Run the 3-stage council process
+    # Reload conversation to include latest user message
+    conversation = storage.get_conversation(conversation_id)
+
+    context_messages = build_context_messages(conversation, max_turns=12)
+
     stage1_results, stage2_results, stage3_result, metadata = await run_full_council(
-        request.content
+        request.content,
+        context_messages=context_messages
     )
 
-    # Add assistant message with all stages
     storage.add_assistant_message(
         conversation_id,
         stage1_results,
@@ -114,13 +193,14 @@ async def send_message(conversation_id: str, request: SendMessageRequest):
         stage3_result
     )
 
-    # Return the complete response with metadata
     return {
         "stage1": stage1_results,
         "stage2": stage2_results,
         "stage3": stage3_result,
         "metadata": metadata
     }
+
+
 
 
 @app.post("/api/conversations/{conversation_id}/message/stream")

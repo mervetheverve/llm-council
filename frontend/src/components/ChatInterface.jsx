@@ -37,6 +37,37 @@ export default function ChatInterface({
     }
   };
 
+  const handleShare = () => {
+    if (!conversation || conversation.messages.length === 0) return;
+
+    let text = `LLM Council Conversation\n${'='.repeat(40)}\n\n`;
+
+    for (const msg of conversation.messages) {
+      if (msg.role === 'user') {
+        text += `USER:\n${msg.content}\n\n`;
+      } else {
+        if (msg.stage1) {
+          text += `--- Stage 1: Individual Responses ---\n`;
+          for (const r of msg.stage1) {
+            text += `[${r.model}]\n${r.response}\n\n`;
+          }
+        }
+        if (msg.stage3) {
+          text += `--- Final Synthesis (${msg.stage3.model}) ---\n${msg.stage3.response}\n\n`;
+        }
+      }
+    }
+
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Conversation copied to clipboard!');
+    }).catch(() => {
+      const win = window.open('', '_blank');
+      if (win) {
+        win.document.write(`<pre>${text.replace(/</g, '&lt;')}</pre>`);
+      }
+    });
+  };
+
   if (!conversation) {
     return (
       <div className="chat-interface">
@@ -50,6 +81,13 @@ export default function ChatInterface({
 
   return (
     <div className="chat-interface">
+      {conversation.messages.length > 0 && (
+        <div className="chat-toolbar">
+          <button className="share-btn" onClick={handleShare} title="Copy conversation to clipboard">
+            Share
+          </button>
+        </div>
+      )}
       <div className="messages-container">
         {conversation.messages.length === 0 ? (
           <div className="empty-state">

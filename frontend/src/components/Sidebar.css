@@ -1,5 +1,5 @@
 .sidebar {
-  width: 260px;
+  width: 280px;
   background: #f8f8f8;
   border-right: 1px solid #e0e0e0;
   display: flex;
@@ -12,10 +12,26 @@
   border-bottom: 1px solid #e0e0e0;
 }
 
+.sidebar-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
 .sidebar-header h1 {
   font-size: 18px;
-  margin: 0 0 12px 0;
+  margin: 0;
   color: #333;
+}
+
+.balance-badge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .new-conversation-btn {
@@ -36,6 +52,84 @@
   border-color: #357abd;
 }
 
+/* Council config section */
+.config-section {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0;
+}
+
+.config-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.config-toggle:hover {
+  background: #f0f0f0;
+}
+
+.config-panel {
+  padding: 4px 12px 12px;
+}
+
+.model-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.model-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+
+.model-checkbox input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.model-name {
+  font-size: 12px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chair-btn {
+  font-size: 11px;
+  padding: 2px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  color: #666;
+  white-space: nowrap;
+  margin-left: 6px;
+}
+
+.chair-btn:hover {
+  background: #f0f0f0;
+}
+
+.chair-btn.active {
+  background: #fff8e1;
+  border-color: #f9a825;
+  color: #f57f17;
+  font-weight: 600;
+}
+
+/* Conversation list */
 .conversation-list {
   flex: 1;
   overflow-y: auto;

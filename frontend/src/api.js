@@ -67,6 +67,37 @@ export const api = {
   },
 
   /**
+   * Get council configuration.
+   */
+  async getConfig() {
+    const response = await fetch(`${API_BASE}/api/config`);
+    if (!response.ok) throw new Error('Failed to get config');
+    return response.json();
+  },
+
+  /**
+   * Update council configuration.
+   */
+  async updateConfig(councilModels, chairmanModel) {
+    const response = await fetch(`${API_BASE}/api/config`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ council_models: councilModels, chairman_model: chairmanModel }),
+    });
+    if (!response.ok) throw new Error('Failed to update config');
+    return response.json();
+  },
+
+  /**
+   * Get OpenRouter balance.
+   */
+  async getBalance() {
+    const response = await fetch(`${API_BASE}/api/balance`);
+    if (!response.ok) throw new Error('Failed to get balance');
+    return response.json();
+  },
+
+  /**
    * Send a message and receive streaming updates.
    * @param {string} conversationId - The conversation ID
    * @param {string} content - The message content
