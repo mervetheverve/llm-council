@@ -9,7 +9,7 @@ export default function Sidebar({
   onNewConversation,
 }) {
   const [balance, setBalance] = useState(null);
-  const [availableModels, setAvailableModels] = useState([]);
+  const [availableModels, setAvailableModels] = useState([]); // [{id, name}]
   const [councilModels, setCouncilModels] = useState([]);
   const [chairmanModel, setChairmanModel] = useState('');
   const [configOpen, setConfigOpen] = useState(false);
@@ -22,7 +22,7 @@ export default function Sidebar({
   const loadConfig = async () => {
     try {
       const cfg = await api.getConfig();
-      setAvailableModels(cfg.available_models);
+      setAvailableModels(cfg.available_models); // [{id, name}, ...]
       setCouncilModels(cfg.council_models);
       setChairmanModel(cfg.chairman_model);
     } catch (e) {
@@ -41,16 +41,15 @@ export default function Sidebar({
     }
   };
 
-  const toggleModel = async (model) => {
+  const toggleModel = async (modelId) => {
     let updated;
-    if (councilModels.includes(model)) {
-      updated = councilModels.filter((m) => m !== model);
+    if (councilModels.includes(modelId)) {
+      updated = councilModels.filter((m) => m !== modelId);
     } else {
-      updated = [...councilModels, model];
+      updated = [...councilModels, modelId];
     }
-    if (updated.length === 0) return; // must have at least 1
+    if (updated.length === 0) return;
     setCouncilModels(updated);
-    // If chairman was removed from council, keep it anyway (chairman can differ)
     try {
       await api.updateConfig(updated, chairmanModel);
     } catch (e) {
@@ -58,19 +57,30 @@ export default function Sidebar({
     }
   };
 
-  const setChair = async (model) => {
-    setChairmanModel(model);
+  const setChair = async (modelId) => {
+    setChairmanModel(modelId);
+    // Also add to council if not already there
+    let updated = councilModels;
+    if (!councilModels.includes(modelId)) {
+      updated = [...councilModels, modelId];
+      setCouncilModels(updated);
+    }
     try {
-      await api.updateConfig(councilModels, model);
+      await api.updateConfig(updated, modelId);
     } catch (e) {
       console.error('Failed to set chairman:', e);
     }
   };
 
-  const shortName = (model) => {
-    // "openai/gpt-5.2" -> "GPT-5.2"
-    const name = model.split('/').pop();
-    return name;
+  const displayName = (model) => {
+    // model is {id, name} object or just a string (fallback)
+    if (typeof model === 'object') return model.name;
+    return model.split('/').pop();
+  };
+
+  const modelId = (model) => {
+    if (typeof model === 'object') return model.id;
+    return model;
   };
 
   return (
@@ -79,7 +89,15 @@ export default function Sidebar({
         <div className="sidebar-title-row">
           <h1>LLM Council</h1>
           {balance !== null && (
-            <div className="balance-badge">${balance.toFixed(2)}</div>
+            <a
+              href="https://openrouter.ai/settings/credits"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="balance-badge"
+              title="Click to add credits on OpenRouter"
+            >
+              ${balance.toFixed(2)}
+            </a>
           )}
         </div>
         <button className="new-conversation-btn" onClick={onNewConversation}>
@@ -92,29 +110,32 @@ export default function Sidebar({
           className="config-toggle"
           onClick={() => setConfigOpen(!configOpen)}
         >
-          {configOpen ? '▼' : '▶'} Council Members
+          {configOpen ? '▼' : '▶'} Council Members ({councilModels.length})
         </button>
         {configOpen && (
           <div className="config-panel">
-            {availableModels.map((model) => (
-              <div key={model} className="model-row">
-                <label className="model-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={councilModels.includes(model)}
-                    onChange={() => toggleModel(model)}
-                  />
-                  <span className="model-name">{shortName(model)}</span>
-                </label>
-                <button
-                  className={`chair-btn ${chairmanModel === model ? 'active' : ''}`}
-                  onClick={() => setChair(model)}
-                  title="Set as Chairman"
-                >
-                  {chairmanModel === model ? '★ Chair' : 'Set Chair'}
-                </button>
-              </div>
-            ))}
+            {availableModels.map((model) => {
+              const id = modelId(model);
+              return (
+                <div key={id} className="model-row">
+                  <label className="model-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={councilModels.includes(id)}
+                      onChange={() => toggleModel(id)}
+                    />
+                    <span className="model-name" title={id}>{displayName(model)}</span>
+                  </label>
+                  <button
+                    className={`chair-btn ${chairmanModel === id ? 'active' : ''}`}
+                    onClick={() => setChair(id)}
+                    title="Set as Chairman"
+                  >
+                    {chairmanModel === id ? '★ Chair' : 'Set Chair'}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

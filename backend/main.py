@@ -48,7 +48,7 @@ app = FastAPI(title="LLM Council API")
 # Enable CORS for local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -85,6 +85,30 @@ class Conversation(BaseModel):
     created_at: str
     title: str
     messages: List[Dict[str, Any]]
+
+
+@app.on_event("startup")
+async def startup_load_models():
+    """Fetch model names from OpenRouter at startup."""
+    import httpx
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.get("https://openrouter.ai/api/v1/models")
+            response.raise_for_status()
+            data = response.json()
+            models_by_id = {m["id"]: m for m in data.get("data", [])}
+            config.AVAILABLE_MODELS = []
+            for mid in config.TOP_MODEL_IDS:
+                if mid in models_by_id:
+                    config.AVAILABLE_MODELS.append({
+                        "id": mid,
+                        "name": models_by_id[mid].get("name", mid),
+                    })
+            print(f"Loaded {len(config.AVAILABLE_MODELS)} models from OpenRouter")
+    except Exception as e:
+        print(f"Failed to fetch models from OpenRouter: {e}")
+        # Fallback: use IDs as names
+        config.AVAILABLE_MODELS = [{"id": mid, "name": mid} for mid in config.TOP_MODEL_IDS]
 
 
 @app.get("/")

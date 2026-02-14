@@ -1,5 +1,5 @@
 .sidebar {
-  width: 280px;
+  width: 320px;
   background: #f8f8f8;
   border-right: 1px solid #e0e0e0;
   display: flex;
@@ -25,13 +25,20 @@
   color: #333;
 }
 
-.balance-badge {
+a.balance-badge {
   background: #e8f5e9;
   color: #2e7d32;
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 13px;
   font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+a.balance-badge:hover {
+  background: #c8e6c9;
 }
 
 .new-conversation-btn {
